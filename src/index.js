@@ -77,9 +77,8 @@ var EmojiList = [
     "\uD83D\uDD1F",
 ];
 var forceEndEmoji = "\u2705";
-var pollEmbed = new discord_js_1.MessageEmbed().setColor("#0099ff");
 client.on("message", function (message) { return __awaiter(void 0, void 0, void 0, function () {
-    var args, command, timeTaken, question, timeout, text, usedEmojis_2, i, emoji, pair, poll, _i, usedEmojis_1, emoji, reactionCollector_1, voterMap_1;
+    var args, command, timeTaken, question_1, timeout, text_1, usedEmojis_2, EmojiOptionInfo_1, i, emoji, poll_1, reactionCollector_1, _i, usedEmojis_1, emoji, voterMap_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -93,14 +92,14 @@ client.on("message", function (message) { return __awaiter(void 0, void 0, void 
                 return [3 /*break*/, 8];
             case 1:
                 if (!(command === "poll")) return [3 /*break*/, 8];
-                question = args.shift();
+                question_1 = args.shift();
                 timeout = 30;
-                text = "*To vote, react using the corresponding emoji*\n\n";
-                if (!!question) return [3 /*break*/, 2];
+                text_1 = "*To vote, react using the corresponding emoji.*\nThe poll will end in **" + timeout + "**s.\n*" + message.author.tag + "* can end the poll by reacting to the " + forceEndEmoji + " emoji.\n\n";
+                if (!!question_1) return [3 /*break*/, 2];
                 message.reply("Poll question not given!");
                 return [3 /*break*/, 8];
             case 2:
-                if (!(question !== undefined)) return [3 /*break*/, 8];
+                if (!(question_1 !== undefined)) return [3 /*break*/, 8];
                 if (args.length < 1) {
                     message.reply("Poll choices not given!");
                     return [2 /*return*/];
@@ -114,26 +113,33 @@ client.on("message", function (message) { return __awaiter(void 0, void 0, void 
                     return [2 /*return*/];
                 }
                 usedEmojis_2 = new Array();
+                EmojiOptionInfo_1 = {};
                 for (i = 0; i < args.length; i++) {
                     emoji = EmojiList[i];
                     usedEmojis_2.push(emoji);
-                    pair = {
-                        emoji: emoji,
+                    EmojiOptionInfo_1[emoji] = {
                         option: args[i],
                         votes: 0,
                     };
-                    text += emoji + " : `" + args[i] + "`\n\n";
+                    text_1 += emoji + " : `" + args[i] + "`\n\n";
                 }
                 usedEmojis_2.push(forceEndEmoji);
-                return [4 /*yield*/, message.channel.send(pollEmbed.setTitle(question).setDescription(text))];
+                return [4 /*yield*/, message.channel.send(new discord_js_1.MessageEmbed()
+                        .setColor("#0099ff")
+                        .setTitle("Poll - " + question_1)
+                        .setDescription(text_1)
+                        .setFooter("Created by - " + message.author.tag))];
             case 3:
-                poll = _a.sent();
+                poll_1 = _a.sent();
+                reactionCollector_1 = poll_1.createReactionCollector(function (reaction, user) {
+                    return usedEmojis_2.includes(reaction.emoji.name) && !user.bot;
+                }, { time: timeout * 1000 });
                 _i = 0, usedEmojis_1 = usedEmojis_2;
                 _a.label = 4;
             case 4:
                 if (!(_i < usedEmojis_1.length)) return [3 /*break*/, 7];
                 emoji = usedEmojis_1[_i];
-                return [4 /*yield*/, poll.react(emoji)];
+                return [4 /*yield*/, poll_1.react(emoji)];
             case 5:
                 _a.sent();
                 _a.label = 6;
@@ -141,24 +147,49 @@ client.on("message", function (message) { return __awaiter(void 0, void 0, void 
                 _i++;
                 return [3 /*break*/, 4];
             case 7:
-                reactionCollector_1 = poll.createReactionCollector(function (reaction, user) {
-                    return usedEmojis_2.includes(reaction.emoji.name) && !user.bot;
-                }, { time: timeout * 1000 });
                 voterMap_1 = new Map();
-                reactionCollector_1.on('collect', function (reaction, user) {
+                reactionCollector_1.on("collect", function (reaction, user) {
                     if (usedEmojis_2.includes(reaction.emoji.name)) {
-                        if (reaction.emoji.name == forceEndEmoji && message.author.id == user.id) {
-                            return reactionCollector_1.stop();
+                        if (reaction.emoji.name == forceEndEmoji &&
+                            message.author.id == user.id) {
+                            return reactionCollector_1.stop("force_stop");
                         }
                         if (!voterMap_1.has(user.id)) {
                             voterMap_1.set(user.id, { emoji: reaction.emoji.name });
                         }
                         var votedEmoji = voterMap_1.get(user.id).emoji;
                         if (votedEmoji !== reaction.emoji.name) {
+                            // Decrease vote
+                            var lastVote = poll_1.reactions.cache.get(votedEmoji);
+                            lastVote.count -= 1;
+                            lastVote === null || lastVote === void 0 ? void 0 : lastVote.users.remove(user.id);
+                            // remove vote from abs map
+                            EmojiOptionInfo_1[votedEmoji].votes -= 1;
+                            voterMap_1.set(user.id, { emoji: reaction.emoji.name });
                         }
+                        // add vote to abs map
+                        EmojiOptionInfo_1[reaction.emoji.name].votes += 1;
                     }
                 });
-                message.channel.send(pollEmbed);
+                reactionCollector_1.on("dispose", function (reaction, user) {
+                    if (usedEmojis_2.includes(reaction.emoji.name)) {
+                        voterMap_1.delete(user.id);
+                        EmojiOptionInfo_1[reaction.emoji.name].votes -= 1;
+                        console.log(EmojiOptionInfo_1[reaction.emoji.name].votes);
+                    }
+                });
+                reactionCollector_1.on("end", function () {
+                    text_1 = "Results are in !\n\n";
+                    for (var emoji in EmojiOptionInfo_1) {
+                        text_1 += "`" + EmojiOptionInfo_1[emoji].option + "` - `" + EmojiOptionInfo_1[emoji].votes + "`\n\n";
+                    }
+                    poll_1.delete();
+                    message.channel.send(new discord_js_1.MessageEmbed()
+                        .setColor("#0099ff")
+                        .setTitle("Poll - " + question_1)
+                        .setDescription(text_1)
+                        .setFooter("Created by - " + message.author.tag));
+                });
                 _a.label = 8;
             case 8: return [2 /*return*/];
         }
