@@ -1,4 +1,4 @@
-import { Client, EmojiIdentifierResolvable, MessageEmbed } from "discord.js";
+import { Client, MessageEmbed } from "discord.js";
 import * as config from "../config.json";
 
 console.log("Running....");
@@ -11,7 +11,7 @@ client.on("ready", () => {
   console.log(`Logged in as ${client.user?.tag}`);
 });
 
-const EmojiList: Array<EmojiIdentifierResolvable> = [
+const EmojiList: Array<string> = [
   "\u0031\u20E3",
   "\u0032\u20E3",
   "\u0033\u20E3",
@@ -24,7 +24,7 @@ const EmojiList: Array<EmojiIdentifierResolvable> = [
   "\uD83D\uDD1F",
 ];
 
-const forceEndEmoji: EmojiIdentifierResolvable = "\u2705";
+const forceEndEmoji: string = "\u2705";
 
 interface EmojiOptionPair {
   [key: string]: {
@@ -64,7 +64,7 @@ client.on("message", async (message) => {
         return;
       }
 
-      const usedEmojis: Array<EmojiIdentifierResolvable> = new Array();
+      const usedEmojis: Array<string> = new Array();
       const EmojiOptionInfo: EmojiOptionPair = {};
 
       for (let i = 0; i < args.length; i++) {
