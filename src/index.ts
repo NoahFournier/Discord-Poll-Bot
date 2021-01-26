@@ -1,5 +1,5 @@
 import { Client, MessageEmbed } from "discord.js";
-import * as config from "../config.json";
+import * as config from "./config.json";
 
 console.log("Running....");
 
