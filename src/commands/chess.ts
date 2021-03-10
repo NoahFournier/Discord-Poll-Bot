@@ -1,10 +1,7 @@
 import { Message, MessageEmbed } from "discord.js";
 import * as axios from "axios";
-import * as config from "../config.json";
 
 const urlPrefix = "https://lichess.org";
-
-const authToken = config.LICHESS_TOKEN;
 
 interface UserSchema {
   data: {
@@ -64,7 +61,6 @@ const ChessExport = {
         }),
         {
           headers: {
-            Authorization: `Bearer ${authToken}`,
             "Content-Type": "application/x-www-form-urlencoded",
           },
         }
