@@ -1,13 +1,14 @@
 import { Client, Collection, Message } from "discord.js";
 import HelloExport from "./commands/hello";
 import PollExport from "./commands/poll";
+import ChessExport from "./commands/chess";
 import * as fs from "fs";
 import * as path from "path";
 import * as config from "./config.json";
 
 console.log("Running....");
 
-const commandList: CommandExport[] = [HelloExport, PollExport];
+const commandList: CommandExport[] = [HelloExport, PollExport, ChessExport];
 
 interface CommandExport {
   name: string;
@@ -56,6 +57,10 @@ client.on("message", async (message) => {
   } else if (command === "poll") {
     if (client.commands) {
       client.commands.get("poll")?.execute(message, args);
+    }
+  } else if (command === "chess") {
+    if (client.commands) {
+      client.commands.get("chess")?.execute(message, args);
     }
   }
 });

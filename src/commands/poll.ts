@@ -14,7 +14,6 @@ const EmojiList: Array<string> = [
 ];
 
 const forceEndEmoji: string = "\u2705";
-
 interface EmojiOptionPair {
   [key: string]: {
     option: string;
